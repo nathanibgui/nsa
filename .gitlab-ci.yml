@@ -1,57 +1,46 @@
-# You can override the included template(s) by including variable overrides
-# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
-# Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/#customizing-settings
-# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
-# Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
-# Note that environment variables can be set in several places
-# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 build-job:
-stages:
-  - backend_build
-  - frontend_build
-  - test
-  - deploy
+  stages:
+    - backend_build
+    - frontend_build
+    - test
+    - deploy
 
-variables:
-  NODE_VERSION: "14.17.0"
-  ANGULAR_CLI_VERSION: "12.0.5"
+  before_script:
+    - apt-get update -qy
+    - apt-get install -y curl
+    - curl -sL https://deb.nodesource.com/setup_14.x | bash -
+    - apt-get install -y nodejs
+    - npm install -g @angular/cli@12.0.5
+    - php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+    - php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+    - rm composer-setup.php
 
-before_script:
-  - apt-get update -qy
-  - apt-get install -y curl
-  - curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -
-  - apt-get install -y nodejs
-  - npm install -g @angular/cli@${ANGULAR_CLI_VERSION}
-  - php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-  - php composer-setup.php --install-dir=/usr/local/bin --filename=composer
-  - rm composer-setup.php
+  backend_install_dependencies:
+    stage: backend_build
+    script:
+      - cd back
+      - composer install
 
-backend_install_dependencies:
-  stage: backend_build
-  script:
-    - cd back  # Assurez-vous d'ajuster le répertoire du backend
-    - composer install
+  frontend_install_dependencies:
+    stage: frontend_build
+    script:
+      - cd front
+      - npm install
 
-frontend_install_dependencies:
-  stage: frontend_build
-  script:
-    - cd front  # Assurez-vous d'ajuster le répertoire du frontend
-    - npm install
+  frontend_build:
+    stage: frontend_build
+    script:
+      - cd front
+      - ng build --prod
 
-frontend_build:
-  stage: frontend_build
-  script:
-    - cd front # Assurez-vous d'ajuster le répertoire du frontend
-    - ng build --prod
+  test:
+    stage: test
+    script:
+      # Ajoutez ici vos commandes de tests si nécessaire
 
-test:
-  stage: test
-  script:
-    # Ajoutez ici vos commandes de tests si nécessaire
-
-deploy:
-  stage: deploy
-  only:
-    - master
-  script:
-    # Ajoutez ici vos commandes de déploiement si nécessaire
+  deploy:
+    stage: deploy
+    only:
+      - master
+    script:
+      # Ajoutez ici vos commandes de déploiement si nécessaire
