@@ -1,0 +1,10 @@
+---
+- name: Install PHP-FPM
+  apt:
+    name: php-fpm
+    state: present
+
+- name: Start PHP-FPM
+  service:
+    name: php-fpm
+    state: started

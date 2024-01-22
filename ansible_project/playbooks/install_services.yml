@@ -1,0 +1,8 @@
+---
+- name: Install and configure services
+  hosts: debian_servers
+  become: true
+  roles:
+    - nginx
+    - php-fpm
+    - mysql

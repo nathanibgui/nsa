@@ -1,0 +1,23 @@
+---
+- name: Install MySQL Server
+  apt:
+    name: mysql-server
+    state: present
+
+- name: Start MySQL Service
+  service:
+    name: mysql
+    state: started
+
+- name: Secure MySQL Installation
+  shell: mysql_secure_installation
+  args:
+    stdin: |
+      Y
+      your_root_password
+      your_root_password
+      Y
+      Y
+      Y
+      Y
+  when: ansible_os_family == "Debian"

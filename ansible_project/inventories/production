@@ -1,0 +1,6 @@
+[debian_servers]
+server1 ansible_host=IP1 # changer ip
+server2 ansible_host=IP2 # changer ip
+
+
+# Ajoutez d'autres serveurs au besoin
