@@ -6,25 +6,52 @@
 # Note that environment variables can be set in several places
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 build-job:
-  stage: build
-  script:
-    - echo "Hello, $GITLAB_USER_LOGIN!"
+stages:
+  - backend_build
+  - frontend_build
+  - test
+  - deploy
 
-test-job1:
+variables:
+  NODE_VERSION: "14.17.0"
+  ANGULAR_CLI_VERSION: "12.0.5"
+
+before_script:
+  - apt-get update -qy
+  - apt-get install -y curl
+  - curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -
+  - apt-get install -y nodejs
+  - npm install -g @angular/cli@${ANGULAR_CLI_VERSION}
+  - php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+  - php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+  - rm composer-setup.php
+
+backend_install_dependencies:
+  stage: backend_build
+  script:
+    - cd back  # Assurez-vous d'ajuster le répertoire du backend
+    - composer install
+
+frontend_install_dependencies:
+  stage: frontend_build
+  script:
+    - cd front  # Assurez-vous d'ajuster le répertoire du frontend
+    - npm install
+
+frontend_build:
+  stage: frontend_build
+  script:
+    - cd front # Assurez-vous d'ajuster le répertoire du frontend
+    - ng build --prod
+
+test:
   stage: test
   script:
-    - echo "This job tests something"
+    # Ajoutez ici vos commandes de tests si nécessaire
 
-test-job2:
-  stage: test
-  script:
-    - echo "This job tests something, but takes more time than test-job1."
-    - echo "After the echo commands complete, it runs the sleep command for 20 seconds"
-    - echo "which simulates a test that runs 20 seconds longer than test-job1"
-    - sleep 20
-
-deploy-prod:
+deploy:
   stage: deploy
+  only:
+    - master
   script:
-    - echo "This job deploys something from the $CI_COMMIT_BRANCH branch."
-  environment: production
+    # Ajoutez ici vos commandes de déploiement si nécessaire
