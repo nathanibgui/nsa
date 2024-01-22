@@ -1,4 +1,6 @@
 build-job:
+  script: echo "This is a placeholder script"
+
   stages:
     - backend_build
     - frontend_build
